@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;background:#eceae6;color:#1f2a36;-webkit-font-smoothing:antialiased;}
+  ::-webkit-scrollbar{height:9px;width:9px;}
+  ::-webkit-scrollbar-thumb{background:#bdc4cc;border-radius:6px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</helmet>
+<div style="min-height:100vh;padding-bottom:56px;">
+
+  <div data-stickybar style="position:sticky;top:0;z-index:20;background:rgba(236,234,230,0.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid #d6d3cc;">
+    <div style="max-width:1340px;margin:0 auto;padding:14px 18px 0;">
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;">
+        <div>
+          <h1 style="margin:0;font-size:20px;font-weight:800;letter-spacing:-0.01em;">Pilisvörösvári Tanuszoda</h1>
+          <div style="margin-top:2px;font-size:12.5px;color:#6b7785;">Foglaltsági beosztás · 2026. június 14. – augusztus 31.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#39434f;font-weight:600;">
+              <span style="width:15px;height:15px;border-radius:3px;background:#e9536b;display:inline-block;"></span>Foglalt
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#39434f;font-weight:600;">
+              <span style="width:15px;height:15px;border-radius:3px;background:#16324c;display:inline-block;"></span>Szabad
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:3px;background:#e6e3dd;border-radius:999px;padding:3px;">
+            <button onClick="{{ setGrid }}" style="{{ gridBtnStyle }}">▦ Rács</button>
+            <button onClick="{{ setList }}" style="{{ listBtnStyle }}">☰ Lista</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;overflow-x:auto;padding:12px 0 12px;">
+        <button onClick="{{ jumpCurrent }}" style="flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;border:none;background:#e9536b;color:#fff;white-space:nowrap;">Aktuális hét</button>
+        <button onClick="{{ showAllWeeks }}" style="{{ allPillStyle }}">Összes hét</button>
+        <div style="flex:0 0 auto;width:1px;height:22px;background:#d6d3cc;margin:0 2px;"></div>
+        <sc-for list="{{ pills }}" as="w" hint-placeholder-count="10">
+          <button onClick="{{ w.onSelect }}" style="{{ w.pillStyle }}">{{ w.short }}</button>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 10px;padding:0 0 13px;">
+        <span style="font-size:12.5px;font-weight:700;color:#39434f;">Szabad időpont keresése:</span>
+        <select value="{{ fromVal }}" onChange="{{ setFrom }}" style="{{ selectStyle }}">
+          <sc-for list="{{ fromOptions }}" as="o" hint-placeholder-count="28"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+        </select>
+        <span style="font-size:13px;color:#8a94a0;font-weight:700;">–</span>
+        <select value="{{ toVal }}" onChange="{{ setTo }}" style="{{ selectStyle }}">
+          <sc-for list="{{ toOptions }}" as="o" hint-placeholder-count="28"><option value="{{ o.value }}">{{ o.label }}</option></sc-for>
+        </select>
+        <sc-if value="{{ searchActive }}" hint-placeholder-val="{{ true }}">
+          <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#1f7a4d;font-weight:700;background:#e7f7ee;border:1px solid #b7e6cc;padding:5px 11px;border-radius:999px;white-space:nowrap;"><span style="width:11px;height:11px;border-radius:3px;background:#2fae66;display:inline-block;"></span>Szabad a sávban · {{ winLabel }}</span>
+          <button onClick="{{ clearSearch }}" style="font-size:12px;font-weight:600;color:#6b7785;background:#fff;border:1px solid #d4dae0;padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap;">Szűrő törlése</button>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <main style="max-width:1340px;margin:0 auto;padding:22px 16px 0;">
+    <sc-for list="{{ visibleWeeks }}" as="week" hint-placeholder-count="1">
+      <section id="het-{{ week.id }}" style="{{ week.cardStyle }}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;">
+          <div>
+            <div style="font-size:16px;font-weight:800;letter-spacing:-0.01em;">{{ week.label }}</div>
+            <div style="font-size:11.5px;color:#8a94a0;margin-top:1px;">{{ week.weekdayNote }}</div>
+          </div>
+          <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:7px;">
+            <sc-if value="{{ week.isCur }}" hint-placeholder-val="{{ true }}">
+              <span style="font-size:11px;font-weight:700;color:#e9536b;background:#fde8ec;border:1px solid #f6c2cd;padding:4px 10px;border-radius:999px;white-space:nowrap;">● Aktuális hét</span>
+            </sc-if>
+            <sc-if value="{{ week.searchActive }}" hint-placeholder-val="{{ true }}">
+              <span style="font-size:11px;font-weight:700;color:#1f7a4d;background:#e7f7ee;border:1px solid #b7e6cc;padding:4px 10px;border-radius:999px;white-space:nowrap;">{{ week.searchResult }}</span>
+            </sc-if>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <sc-for list="{{ week.stats }}" as="st" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;justify-content:flex-end;gap:9px;">
+                  <div style="text-align:right;line-height:1.05;">
+                    <div style="font-size:11px;color:#8a94a0;white-space:nowrap;"><span style="{{ st.nameStyle }}">{{ st.name }}</span> <span style="font-size:15px;font-weight:800;color:#1f2a36;">{{ st.pct }}</span> foglalt</div>
+                    <div style="font-size:10px;color:#9aa3ad;white-space:nowrap;">{{ st.text }}</div>
+                  </div>
+                  <div style="width:60px;height:6px;background:#eceef1;border-radius:999px;overflow:hidden;"><div style="{{ st.barStyle }}"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ isGrid }}" hint-placeholder-val="{{ true }}">
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:7px;">
+          <div style="display:grid;grid-template-columns:118px repeat(28,minmax(28px,1fr));gap:1.5px;background:#ccd2d9;min-width:944px;">
+
+            <div style="position:sticky;left:0;z-index:5;background:#eef1f4;display:flex;align-items:flex-end;justify-content:flex-start;padding:4px 10px;font-size:10px;font-weight:700;color:#7a8593;letter-spacing:0.03em;min-height:36px;">PÁLYA / IDŐ</div>
+            <sc-for list="{{ timeCells }}" as="t" hint-placeholder-count="28">
+              <div style="{{ t.style }}">
+                <span style="{{ t.startStyle }}">{{ t.label }}</span>
+                <span style="{{ t.endStyle }}">{{ t.end }}</span>
+              </div>
+            </sc-for>
+
+            <sc-for list="{{ week.pools }}" as="pool" hint-placeholder-count="2">
+              <div style="grid-column:1 / -1;background:#fbfcfd;min-height:28px;display:flex;align-items:center;">
+                <span style="{{ pool.bandStyle }}">{{ pool.name }}</span>
+              </div>
+              <sc-for list="{{ pool.lanes }}" as="lane" hint-placeholder-count="6">
+                <div style="{{ lane.labelStyle }}">{{ lane.label }}</div>
+                <sc-for list="{{ lane.cells }}" as="cell" hint-placeholder-count="28">
+                  <div title="{{ cell.title }}" style="{{ cell.style }}" style-hover="{{ cellHover }}"></div>
+                </sc-for>
+              </sc-for>
+            </sc-for>
+
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:18px;">
+          <sc-for list="{{ week.pools }}" as="pool" hint-placeholder-count="2">
+            <div>
+              <div style="margin-bottom:9px;"><span style="{{ pool.listBandStyle }}">{{ pool.name }}</span></div>
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <sc-for list="{{ pool.lanes }}" as="lane" hint-placeholder-count="6">
+                  <div style="background:#ffffff;border:1px solid #ebedf0;border-radius:10px;padding:11px 13px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px;">
+                      <span style="font-size:13px;font-weight:700;color:#2a3642;">{{ lane.listLabel }}</span>
+                      <sc-if value="{{ lane.badgeShow }}" hint-placeholder-val="{{ false }}"><span style="{{ lane.badgeStyle }}">{{ lane.badge }}</span></sc-if>
+                    </div>
+                    <div style="display:flex;gap:3px;align-items:flex-end;">
+                      <sc-for list="{{ lane.hourGroups }}" as="g" hint-placeholder-count="14">
+                        <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                          <div style="display:flex;gap:1px;height:24px;border-radius:5px;overflow:hidden;">
+                            <sc-for list="{{ g.segs }}" as="s" hint-placeholder-count="2"><div title="{{ s.title }}" style="{{ s.style }}"></div></sc-for>
+                          </div>
+                          <div style="text-align:center;font-size:8.5px;color:#9aa3ad;font-weight:600;">{{ g.hour }}</div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+      </section>
+    </sc-for>
+
+    <p style="text-align:center;font-size:11.5px;color:#9aa3ad;margin:26px 0 0;">Vidd az egeret (vagy érintsd meg) egy sávot a pontos időpontért és állapotért.</p>
+  </main>
+</div>
+
+<template id="__bundler_thumbnail" data-bg-color="#16324c">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#16324c"/>
+    <g transform="translate(180,200)">
+      <rect x="0" y="0" width="840" height="60" rx="8" fill="#1f3f5e"/>
+      <rect x="0" y="80" width="840" height="60" rx="8" fill="#1f3f5e"/>
+      <rect x="140" y="80" width="200" height="60" rx="8" fill="#e9536b"/>
+      <rect x="0" y="160" width="840" height="60" rx="8" fill="#1f3f5e"/>
+      <rect x="420" y="160" width="160" height="60" rx="8" fill="#e9536b"/>
+      <rect x="0" y="240" width="840" height="60" rx="8" fill="#1f3f5e"/>
+      <rect x="640" y="240" width="200" height="60" rx="8" fill="#e9536b"/>
+    </g>
+  </svg>
+</template></x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Klasszikus&quot;,&quot;Tenger&quot;,&quot;Kontraszt&quot;],&quot;default&quot;:&quot;Klasszikus&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;rowHeight&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:26,&quot;min&quot;:20,&quot;max&quot;:44,&quot;tsType&quot;:&quot;number&quot;},&quot;weekdayNote&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  RAW = [
+    ["0000000000000000001100111100","0000000000000000000000000110","0000000000000000000000000000","0000000000000000000000000000","0000000000000000000000000000","0011110011000001100000111110","0000110011000001111011111000","0000000011000001100011111110"],
+    ["0000001100000000001100111100","0000000000000000000000000110","0000000000000000000000000000","0000000000000000000000000000","0000000011110001110000000000","0011110011110001110000111110","0000111111110001111111111000","0000001111110001111111111110"],
+    ["0000001100000000001111001100","0000000000000000000011000110","0000000000000000000000000000","0000000000000000000000000000","0000000011100000110000000000","0011110011100000110000111110","0000111111000000111111111000","0000001111000000111111111110"],
+    ["0000001111000000001100001100","0000000000000000000000000110","0000000000000000000000000000","0000000011100000000000000000","0000000011100000110000000000","0011110011100000110000111110","0000111111000000111111111000","0000001111000000111111111110"],
+    ["0000001111000001101100000110","0000000011000001100000000000","0000000000000000000000000000","0000000011110000000000000000","0000000011110000011000000000","0011110011110000011001111110","0000111111110001111101111000","0000001111110001101111001110"],
+    ["0000001100000000001100000110","0000000000000000000000000000","0000000000000000000000000000","0000000011100000000000000000","0000000011100000110000000000","0011110011100000110001111110","0000001111000000111101111000","0000001111000000111111001110"],
+    ["0000001111000000001100000110","0000000011000000000000000000","0000000011000000000000000000","0000000000000000000000000000","0000000011110000110000000000","0011110011110000110001111110","0000001111110000111101111000","0000001111110000111111001110"],
+    ["0000011111110001101100000110","0000000111110000000000000000","0000000110000000000000000000","0000000000000000000000000000","0000000001100000011000000000","0011110001100000011001111110","0000001111110001101101111000","0000001111110001111111001110"],
+    ["0000000011000000000000000000","0000000000000000000000000000","0000000000000000000000000000","0000000000000000000000000000","0000000000000000000000000000","0011110000000000000000000110","0000000000000000000000000000","0000000000000000000000000000"],
+    ["0000000011000000000000000000","0000000000000000000000000000","0000000000000000000000000000","0000000000000000000000000000","0000000000000000000000000000","0011110000000000000000000110","0000000000000000000000000000","0000000000000000000000000000"]
+  ];
+
+  META = [
+    {y1:"2026-06-26", label:"Június 22 – 26.", short:"Jún 22"},
+    {y1:"2026-07-03", label:"Június 29 – Július 3.", short:"Jún 29"},
+    {y1:"2026-07-10", label:"Július 6 – 10.", short:"Júl 6"},
+    {y1:"2026-07-17", label:"Július 13 – 17.", short:"Júl 13"},
+    {y1:"2026-07-24", label:"Július 20 – 24.", short:"Júl 20"},
+    {y1:"2026-07-31", label:"Július 27 – 31.", short:"Júl 27"},
+    {y1:"2026-08-07", label:"Augusztus 3 – 7.", short:"Aug 3"},
+    {y1:"2026-08-14", label:"Augusztus 10 – 14.", short:"Aug 10"},
+    {y1:"2026-08-21", label:"Augusztus 17 – 21.", short:"Aug 17"},
+    {y1:"2026-08-28", label:"Augusztus 24 – 28.", short:"Aug 24"}
+  ];
+
+  THEMES = {
+    "Klasszikus": {free:"#16324c", booked:"#e9536b"},
+    "Tenger":     {free:"#0e3a4a", booked:"#ef7a5a"},
+    "Kontraszt":  {free:"#0b1f33", booked:"#ff2d55"}
+  };
+
+  currentWeekId = (() => {
+    const t = new Date();
+    let i = this.META.findIndex(m => t <= new Date(m.y1 + "T23:59:59"));
+    return i < 0 ? this.META.length - 1 : i;
+  })();
+
+  state = { selected: this.currentWeekId, showAll: false, searchActive: false, fromIdx: 18, toIdx: 21, viewMode: (typeof window !== "undefined" && window.innerWidth <= 700) ? "list" : "grid" };
+
+  pick = (id) => {
+    this.setState({ selected: id, showAll: false });
+    window.scrollTo(0, 0);
+  };
+
+  showAllWeeks = () => {
+    const id = this.state.selected;
+    this.setState({ showAll: true }, () => {
+      setTimeout(() => this.scrollToWeek(id, true), 60);
+    });
+  };
+
+  jumpCurrent = () => this.pick(this.currentWeekId);
+
+  setFrom = (e) => {
+    const v = parseInt(e.target.value, 10);
+    this.setState(s => ({ fromIdx: v, toIdx: Math.max(v, s.toIdx), searchActive: true }));
+  };
+  setTo = (e) => {
+    const v = parseInt(e.target.value, 10);
+    this.setState(s => ({ toIdx: v, fromIdx: Math.min(v, s.fromIdx), searchActive: true }));
+  };
+  clearSearch = () => this.setState({ searchActive: false });
+
+  setGrid = () => this.setState({ viewMode: "grid" });
+  setList = () => this.setState({ viewMode: "list" });
+
+  scrollToWeek = (id, smooth) => {
+    const el = document.getElementById("het-" + id);
+    if (!el) return;
+    const bar = document.querySelector("[data-stickybar]");
+    const off = (bar ? bar.offsetHeight : 120) + 14;
+    const target = Math.max(0, el.getBoundingClientRect().top + window.scrollY - off);
+    if (this._timer) { clearInterval(this._timer); this._timer = null; }
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!smooth || reduce) { window.scrollTo(0, target); return; }
+    const start = window.scrollY, dist = target - start, dur = 400, t0 = Date.now();
+    const ease = (p) => p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+    this._timer = setInterval(() => {
+      const p = Math.min(1, (Date.now() - t0) / dur);
+      window.scrollTo(0, start + dist * ease(p));
+      if (p >= 1) { clearInterval(this._timer); this._timer = null; }
+    }, 16);
+  };
+
+  componentDidMount() {
+    window.scrollTo(0, 0);
+  }
+
+  renderVals() {
+    const theme = this.THEMES[this.props.theme] || this.THEMES["Klasszikus"];
+    const FREE = theme.free, BOOK = theme.booked;
+    const rh = Math.max(20, Math.min(44, this.props.rowHeight ?? 26)) + "px";
+    const showWd = this.props.weekdayNote ?? true;
+
+    const active = this.state.searchActive;
+    const fromIdx = this.state.fromIdx, toIdx = this.state.toIdx;
+    const GREEN = "#2fae66";
+    const inWin = (ci) => ci >= fromIdx && ci <= toIdx;
+    const isGrid = this.state.viewMode === "grid";
+    const isList = this.state.viewMode === "list";
+
+    const starts = ["6:00","6:30","7:00","7:30","8:00","8:30","9:00","9:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30"];
+    const times = starts.map((s, i) => ({ start: s, end: i < 27 ? starts[i + 1] : "20:00", hour: i % 2 === 0 }));
+
+    const timeCells = times.map((t, i) => {
+      const win = active && inWin(i);
+      const dim = active && !inWin(i);
+      return {
+        label: t.start,
+        end: t.end,
+        style: {
+          background: win ? "#fff6e0" : "#ffffff",
+          opacity: dim ? 0.4 : 1,
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          gap: "1px", minHeight: "42px", lineHeight: "1.0", textAlign: "center", padding: "3px 1px"
+        },
+        startStyle: { color: "#1f2a36", fontWeight: "700", fontSize: t.hour ? "11px" : "10px" },
+        endStyle: { color: "#b3bbc3", fontWeight: "500", fontSize: "8.5px" }
+      };
+    });
+
+    const poolDefs = [
+      { name: "Úszó-medence", short: "Úszó", lanes: [0,1,2,3,4,5], accent: "#16324c" },
+      { name: "Tan-medence",  short: "Tan",  lanes: [6,7],         accent: "#5b6b7a" }
+    ];
+
+    const cellHover = {
+      filter: "brightness(1.22)",
+      boxShadow: "inset 0 0 0 2px rgba(255,255,255,0.85)",
+      cursor: "default"
+    };
+
+    const showAll = this.state.showAll;
+    const sel = this.state.selected;
+
+    const cardOf = (wk, wi) => {
+      const meta = this.META[wi];
+      const selected = sel === wi;
+      const isCur = this.currentWeekId === wi;
+      const pools = poolDefs.map(pd => ({
+        name: pd.name,
+        bandStyle: {
+          position: "sticky", left: "12px", fontSize: "10.5px", fontWeight: "800",
+          letterSpacing: "0.09em", color: pd.accent, textTransform: "uppercase"
+        },
+        listBandStyle: {
+          fontSize: "11px", fontWeight: "800", letterSpacing: "0.08em",
+          color: pd.accent, textTransform: "uppercase"
+        },
+        lanes: pd.lanes.map(li => {
+          const row = wk[li];
+          const num = pd.lanes[0] === 0 ? li + 1 : li - 5;
+          let freeInWin = active;
+          const cells = times.map((t, ci) => {
+            const booked = row[ci] === "1";
+            const win = active && inWin(ci);
+            if (win && booked) freeInWin = false;
+            let bg = booked ? BOOK : FREE;
+            let op = 1;
+            if (active) {
+              if (win) { bg = booked ? BOOK : GREEN; }
+              else { op = 0.3; }
+            }
+            return {
+              title: pd.name + " · " + num + ". pálya · " + t.start + "–" + t.end + " · " + (booked ? "FOGLALT" : "Szabad"),
+              style: { background: bg, opacity: op, minHeight: rh, width: "100%" }
+            };
+          });
+          const match = active && freeInWin;
+          const hourGroups = [];
+          for (let g = 0; g < 14; g++) {
+            const segs = [2 * g, 2 * g + 1].map(ci => {
+              const booked = row[ci] === "1";
+              const win = active && inWin(ci);
+              let bg = booked ? BOOK : FREE, op = 1;
+              if (active) { if (win) { bg = booked ? BOOK : GREEN; } else { op = 0.3; } }
+              return {
+                title: pd.name + " · " + num + ". pálya · " + times[ci].start + "–" + times[ci].end + " · " + (booked ? "FOGLALT" : "Szabad"),
+                style: { flex: "1", background: bg, opacity: op }
+              };
+            });
+            hourGroups.push({ hour: String(6 + g), segs });
+          }
+          return {
+            label: match ? num + ". pálya  ✓" : num + ". pálya",
+            labelStyle: {
+              position: "sticky", left: "0", zIndex: "3",
+              background: match ? "#e7f7ee" : "#f6f8fa",
+              borderLeft: "4px solid " + (match ? GREEN : pd.accent),
+              display: "flex", alignItems: "center", paddingLeft: "11px",
+              fontSize: "12px", fontWeight: match ? "700" : "600",
+              color: match ? "#1f7a4d" : "#2a3642", minHeight: rh
+            },
+            cells,
+            listLabel: num + ". pálya",
+            badgeShow: active,
+            badge: match ? "Szabad a sávban" : "Foglalt a sávban",
+            badgeStyle: {
+              fontSize: "11px", fontWeight: "700", padding: "3px 10px", borderRadius: "999px", whiteSpace: "nowrap",
+              background: match ? "#e7f7ee" : "#f3eef0", color: match ? "#1f7a4d" : "#9c6470",
+              border: "1px solid " + (match ? "#b7e6cc" : "#e8d8dc")
+            },
+            hourGroups
+          };
+        })
+      }));
+      const stats = poolDefs.map(pd => {
+        const bc = pd.lanes.reduce((a, li) => a + (wk[li].split("1").length - 1), 0);
+        const tot = pd.lanes.length * 28;
+        const p = Math.round((bc / tot) * 100);
+        return {
+          name: pd.short,
+          pct: p + "%",
+          text: bc + " / " + tot + " sáv",
+          nameStyle: { color: pd.accent, fontWeight: "700", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.04em" },
+          barStyle: { width: p + "%", height: "100%", background: BOOK, borderRadius: "999px" }
+        };
+      });
+      let mU = 0, mT = 0;
+      if (active) {
+        poolDefs.forEach(pd => pd.lanes.forEach(li => {
+          let free = true;
+          for (let ci = fromIdx; ci <= toIdx; ci++) if (wk[li][ci] === "1") { free = false; break; }
+          if (free) { if (pd.short === "Úszó") mU++; else mT++; }
+        }));
+      }
+      return {
+        id: wi,
+        label: meta.label,
+        isCur,
+        stats,
+        searchActive: active,
+        searchResult: (mU + mT) + " szabad pálya · Úszó " + mU + " · Tan " + mT,
+        weekdayNote: showWd ? "hétfő – péntek" : "",
+        cardStyle: {
+          background: "#ffffff", borderRadius: "12px", padding: "16px 16px 18px",
+          marginBottom: "20px", scrollMarginTop: "150px",
+          boxShadow: (selected && showAll) ? "0 0 0 2px " + FREE + ", 0 8px 24px rgba(0,0,0,0.10)" : "0 1px 3px rgba(0,0,0,0.08)"
+        },
+        pools
+      };
+    };
+
+    const pills = this.RAW.map((wk, wi) => {
+      const selected = !showAll && sel === wi;
+      const isCur = this.currentWeekId === wi;
+      const range = this.META[wi].label
+        .replace("Június", "Jún").replace("Július", "Júl").replace("Augusztus", "Aug")
+        .replace(/\.$/, "");
+      return {
+        short: range,
+        onSelect: () => this.pick(wi),
+        pillStyle: {
+          flex: "0 0 auto", padding: "7px 13px", borderRadius: "999px", fontSize: "12px",
+          fontWeight: "600", cursor: "pointer", whiteSpace: "nowrap",
+          border: selected ? "1px solid " + FREE : (isCur ? "1px solid #e9536b" : "1px solid #d4dae0"),
+          background: selected ? FREE : "#ffffff",
+          color: selected ? "#ffffff" : (isCur ? "#e9536b" : "#39434f")
+        }
+      };
+    });
+
+    const allPillStyle = {
+      flex: "0 0 auto", padding: "7px 14px", borderRadius: "999px", fontSize: "12px",
+      fontWeight: "700", cursor: "pointer", whiteSpace: "nowrap",
+      border: showAll ? "1px solid " + FREE : "1px solid #d4dae0",
+      background: showAll ? FREE : "#ffffff", color: showAll ? "#ffffff" : "#39434f"
+    };
+
+    const visibleWeeks = showAll
+      ? this.RAW.map((wk, wi) => cardOf(wk, wi))
+      : [cardOf(this.RAW[sel], sel)];
+
+    const fromOptions = starts.map((s, i) => ({ value: String(i), label: s }));
+    const toOptions = times.map((t, i) => ({ value: String(i), label: t.end }));
+    const selectStyle = {
+      padding: "5px 8px", borderRadius: "8px", border: "1px solid #cfd5db",
+      background: "#fff", fontSize: "12.5px", fontWeight: "600", color: "#1f2a36", cursor: "pointer"
+    };
+
+    const segBtn = (on) => ({
+      padding: "6px 13px", borderRadius: "999px", fontSize: "12px", fontWeight: "700",
+      cursor: "pointer", border: "none", whiteSpace: "nowrap",
+      background: on ? "#ffffff" : "transparent", color: on ? "#1f2a36" : "#7a8593",
+      boxShadow: on ? "0 1px 2px rgba(0,0,0,0.12)" : "none"
+    });
+
+    return {
+      pills, visibleWeeks, allPillStyle, timeCells, cellHover,
+      jumpCurrent: this.jumpCurrent, showAllWeeks: this.showAllWeeks,
+      setFrom: this.setFrom, setTo: this.setTo, clearSearch: this.clearSearch,
+      searchActive: active, fromVal: String(fromIdx), toVal: String(toIdx),
+      fromOptions, toOptions, selectStyle,
+      winLabel: starts[fromIdx] + "–" + times[toIdx].end,
+      isGrid, isList, setGrid: this.setGrid, setList: this.setList,
+      gridBtnStyle: segBtn(isGrid), listBtnStyle: segBtn(isList)
+    };
+  }
+}
+</script>
+</body>
+</html>
