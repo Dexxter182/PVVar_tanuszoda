@@ -30,25 +30,6 @@ kezelhető web-felület.
 
 ---
 
-## Közzététel GitHub Pages-en
-
-1. Töltsd fel a repó tartalmát a GitHubra (legalább az `index.html`-t).
-2. A repó **Settings → Pages** menüben:
-   - **Source:** `Deploy from a branch`
-   - **Branch:** `main` / `(root)` → **Save**
-3. Pár perc múlva elérhető lesz:
-   `https://<felhasznalonev>.github.io/<repo-nev>/`
-
-> Mivel az `index.html` önálló (minden bele van ágyazva), más fájlra nincs is szükség a működéshez.
-
----
-
-## Helyi megnyitás
-
-Csak nyisd meg az `index.html`-t bármelyik böngészőben (dupla kattintás). Nem kell szerver.
-
----
-
 ## Fájlok
 
 | Fájl | Leírás |
