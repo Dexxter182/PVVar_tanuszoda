@@ -4,8 +4,6 @@ Interaktív, kattintható foglaltsági nézet a **Pilisvörösvári Tanuszoda** 
 (2026. június 14. – augusztus 31.). Egy Excel-táblából (képről kiolvasva) készült, könnyen
 kezelhető web-felület.
 
-👉 **Élő demó:** ha GitHub Pages-re teszed, az `index.html` magától betöltődik (lásd lentebb).
-
 ---
 
 ## Funkciók
